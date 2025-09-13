@@ -441,6 +441,16 @@ const isUpdatingSystem = ref(false)
 const isBackingUp = ref(false)
 const isResetting = ref(false)
 
+// 카테고리 관리 상태 (관리자 기능)
+const categories = ref<Category[]>([])
+const isLoadingCategories = ref(false)
+const isCreatingCategory = ref(false)
+const newCategoryForm = ref<{ name: string; description?: string }>({ name: '', description: '' })
+const editingCategoryId = ref<number | null>(null)
+const editCategoryForm = ref<{ name: string; description?: string }>({ name: '', description: '' })
+const isUpdatingCategory = ref(false)
+const deletingCategoryId = ref<number | null>(null)
+
 /**
  * 설정 데이터 로드 (프로필/시스템)
  * - 프로필: 현재 로그인 사용자 정보로 초기화
