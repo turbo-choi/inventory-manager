@@ -1,0 +1,234 @@
+{
+  "users": [
+    {
+      "id": 4,
+      "username": "user01",
+      "password_hash": "$2b$10$xlViLgaw.u.XXphrkiHWmu3rezsytlFgHct1mTwe.HeDlRGdBfCwy",
+      "email": "user01@aaa.com",
+      "role": "employee",
+      "created_at": "2025-09-12T17:25:20.971Z",
+      "updated_at": "2025-09-13T02:58:36.534Z",
+      "is_active": true
+    },
+    {
+      "id": 1,
+      "username": "admin",
+      "email": "admin@company.com",
+      "password_hash": "$2b$10$IJlonFdnLfCWEDT.SRIUdub0xhZNRL1ERb9TkVD5LuQI2vUyC2V/K",
+      "role": "admin",
+      "created_at": "2025-09-12T13:54:09.421Z",
+      "updated_at": "2025-09-13T06:54:59.666Z"
+    }
+  ],
+  "categories": [
+    {
+      "id": 2,
+      "name": "사무용품",
+      "description": "사무용품 카테고리",
+      "created_at": "2025-09-12T13:54:09.421Z",
+      "updated_at": "2025-09-12T13:54:09.421Z"
+    },
+    {
+      "id": 1,
+      "name": "전자제품",
+      "description": "전자제품 카테고리",
+      "created_at": "2025-09-12T13:54:09.421Z",
+      "updated_at": "2025-09-12T13:54:09.421Z"
+    }
+  ],
+  "inventory": [
+    {
+      "id": 3,
+      "name": "냉장고",
+      "description": "냉장고",
+      "sku": "20250915-001",
+      "category_id": 1,
+      "quantity": 2,
+      "minimum_quantity": 3,
+      "unit_price": 100000,
+      "location": "서울",
+      "created_at": "2025-09-13T05:20:12.960Z",
+      "updated_at": "2025-09-13T06:57:30.310Z"
+    },
+    {
+      "id": 1,
+      "name": "노트북",
+      "description": "업무용 노트북",
+      "category_id": 1,
+      "quantity": 23,
+      "unit_price": 1500000,
+      "supplier": "Tech Corp",
+      "location": "창고 A-1",
+      "created_at": "2025-09-12T13:54:09.421Z",
+      "updated_at": "2025-09-13T06:27:52.452Z",
+      "sku": "20250915-002",
+      "minimum_quantity": 2
+    },
+    {
+      "id": 2,
+      "name": "볼펜",
+      "description": "검정 볼펜1",
+      "category_id": 2,
+      "quantity": 99,
+      "unit_price": 1000,
+      "supplier": "Office Supply",
+      "location": "창고 B-1",
+      "created_at": "2025-09-12T13:54:09.421Z",
+      "updated_at": "2025-09-13T06:28:44.145Z",
+      "sku": "20250915-003",
+      "minimum_quantity": 10
+    }
+  ],
+  "transactions": [
+    {
+      "id": 1,
+      "inventory_id": 3,
+      "type": "out",
+      "quantity": 8,
+      "notes": "출고1",
+      "created_by": 1,
+      "created_at": "2025-09-13T05:37:20.996Z"
+    },
+    {
+      "id": 2,
+      "inventory_id": 3,
+      "type": "in",
+      "quantity": 1,
+      "notes": "입고1",
+      "created_by": 1,
+      "created_at": "2025-09-13T05:38:11.225Z"
+    },
+    {
+      "id": 3,
+      "inventory_id": 3,
+      "type": "in",
+      "quantity": 1,
+      "notes": "입고1",
+      "created_by": 1,
+      "created_at": "2025-09-13T05:39:02.664Z"
+    },
+    {
+      "id": 4,
+      "inventory_id": 3,
+      "type": "out",
+      "quantity": 1,
+      "notes": null,
+      "created_by": 1,
+      "created_at": "2025-09-13T05:52:03.664Z"
+    },
+    {
+      "id": 5,
+      "inventory_id": 3,
+      "type": "out",
+      "quantity": 1,
+      "notes": null,
+      "created_by": 1,
+      "created_at": "2025-09-13T05:52:07.672Z"
+    },
+    {
+      "id": 6,
+      "inventory_id": 3,
+      "type": "in",
+      "quantity": 1,
+      "notes": null,
+      "created_by": 1,
+      "created_at": "2025-09-13T05:52:30.609Z"
+    },
+    {
+      "id": 7,
+      "inventory_id": 3,
+      "type": "in",
+      "quantity": 1,
+      "notes": null,
+      "created_by": 1,
+      "created_at": "2025-09-13T05:52:33.385Z"
+    },
+    {
+      "id": 8,
+      "inventory_id": 1,
+      "type": "in",
+      "quantity": 5,
+      "notes": "CLI test",
+      "created_by": 1,
+      "created_at": "2025-09-13T06:19:28.186Z"
+    },
+    {
+      "id": 9,
+      "inventory_id": 1,
+      "type": "in",
+      "quantity": 5,
+      "notes": "CLI test in",
+      "created_by": 1,
+      "created_at": "2025-09-13T06:20:27.250Z"
+    },
+    {
+      "id": 10,
+      "inventory_id": 1,
+      "type": "out",
+      "quantity": 3,
+      "notes": "CLI test out",
+      "created_by": 1,
+      "created_at": "2025-09-13T06:20:27.535Z"
+    },
+    {
+      "id": 11,
+      "inventory_id": 1,
+      "type": "in",
+      "quantity": 2,
+      "notes": "quick check",
+      "created_by": 1,
+      "created_at": "2025-09-13T06:21:33.679Z"
+    },
+    {
+      "id": 12,
+      "inventory_id": 1,
+      "type": "in",
+      "quantity": 4,
+      "notes": "api sanity in",
+      "created_by": 1,
+      "created_at": "2025-09-13T06:27:11.726Z"
+    },
+    {
+      "id": 13,
+      "inventory_id": 1,
+      "type": "out",
+      "quantity": 1,
+      "notes": null,
+      "created_by": 1,
+      "created_at": "2025-09-13T06:27:32.398Z"
+    },
+    {
+      "id": 14,
+      "inventory_id": 1,
+      "type": "in",
+      "quantity": 1,
+      "notes": null,
+      "created_by": 1,
+      "created_at": "2025-09-13T06:27:52.453Z"
+    },
+    {
+      "id": 15,
+      "inventory_id": 2,
+      "type": "out",
+      "quantity": 1,
+      "notes": null,
+      "created_by": 1,
+      "created_at": "2025-09-13T06:28:21.914Z"
+    },
+    {
+      "id": 16,
+      "inventory_id": 3,
+      "type": "out",
+      "quantity": 2,
+      "notes": null,
+      "created_by": 4,
+      "created_at": "2025-09-13T06:57:30.311Z"
+    }
+  ],
+  "lastIds": {
+    "users": 4,
+    "categories": 2,
+    "inventory": 3,
+    "transactions": 16
+  }
+}
