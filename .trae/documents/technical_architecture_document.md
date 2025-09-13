@@ -27,46 +27,53 @@ graph TD
 
 ## 2. Technology Description
 
-- **Frontend**: Vue.js@3 + TypeScript + Vite + Tailwind CSS + Pinia
-- **Backend**: Express.js@4 + TypeScript + JWT + bcrypt
-- **Database**: SQLite3 + better-sqlite3
-- **Development**: ESLint + Prettier + Husky
+* **Frontend**: Vue.js\@3 + TypeScript + Vite + Tailwind CSS + Pinia
+
+* **Backend**: Express.js\@4 + TypeScript + JWT + bcrypt
+
+* **Database**: SQLite3 + better-sqlite3
+
+* **Development**: ESLint + Prettier + Husky
 
 ## 3. Route definitions
 
-| Route | Purpose |
-|-------|---------|
-| /login | 로그인 페이지, 사용자 인증 처리 |
-| /dashboard | 대시보드, 재고 현황 요약 및 빠른 액션 |
-| /inventory | 재고 목록 페이지, 전체 재고 조회 및 검색 |
-| /inventory/:id | 재고 상세 페이지, 개별 재고 정보 및 이력 |
-| /transactions | 입출고 관리 페이지, 입출고 등록 및 이력 조회 |
-| /users | 사용자 관리 페이지, 직원 계정 관리 (관리자 전용) |
-| /settings | 설정 페이지, 시스템 설정 및 프로필 관리 |
+| Route          | Purpose                       |
+| -------------- | ----------------------------- |
+| /login         | 로그인 페이지, 사용자 인증 처리            |
+| /dashboard     | 대시보드, 재고 현황 요약 및 빠른 액션        |
+| /inventory     | 재고 목록 페이지, 전체 재고 조회 및 검색      |
+| /inventory/:id | 재고 상세 페이지, 개별 재고 정보 및 이력      |
+| /transactions  | 입출고 관리 페이지, 입출고 등록 및 이력 조회    |
+| /users         | 사용자 관리 페이지, 직원 계정 관리 (관리자 전용) |
+| /settings      | 설정 페이지, 시스템 설정 및 프로필 관리       |
 
 ## 4. API definitions
 
 ### 4.1 Core API
 
 **사용자 인증 관련**
+
 ```
 POST /api/auth/login
 ```
 
 Request:
+
 | Param Name | Param Type | isRequired | Description |
-|------------|------------|------------|-------------|
-| username | string | true | 사용자명 |
-| password | string | true | 비밀번호 (평문) |
+| ---------- | ---------- | ---------- | ----------- |
+| username   | string     | true       | 사용자명        |
+| password   | string     | true       | 비밀번호 (평문)   |
 
 Response:
+
 | Param Name | Param Type | Description |
-|------------|------------|-------------|
-| success | boolean | 로그인 성공 여부 |
-| token | string | JWT 토큰 |
-| user | object | 사용자 정보 |
+| ---------- | ---------- | ----------- |
+| success    | boolean    | 로그인 성공 여부   |
+| token      | string     | JWT 토큰      |
+| user       | object     | 사용자 정보      |
 
 Example:
+
 ```json
 {
   "username": "admin",
@@ -75,6 +82,7 @@ Example:
 ```
 
 **재고 관리 관련**
+
 ```
 GET /api/inventory
 GET /api/inventory/:id
@@ -84,6 +92,7 @@ DELETE /api/inventory/:id
 ```
 
 **입출고 관리 관련**
+
 ```
 GET /api/transactions
 POST /api/transactions
@@ -91,6 +100,7 @@ GET /api/transactions/inventory/:id
 ```
 
 **사용자 관리 관련 (관리자 전용)**
+
 ```
 GET /api/users
 POST /api/users
@@ -181,6 +191,7 @@ erDiagram
 ### 6.2 Data Definition Language
 
 **사용자 테이블 (users)**
+
 ```sql
 -- 사용자 테이블 생성
 CREATE TABLE users (
@@ -205,6 +216,7 @@ VALUES ('admin', '$2b$10$hash_here', '시스템 관리자', 'admin');
 ```
 
 **카테고리 테이블 (categories)**
+
 ```sql
 -- 카테고리 테이블 생성
 CREATE TABLE categories (
@@ -222,6 +234,7 @@ INSERT INTO categories (name, description) VALUES
 ```
 
 **재고 테이블 (inventory)**
+
 ```sql
 -- 재고 테이블 생성
 CREATE TABLE inventory (
@@ -247,6 +260,7 @@ CREATE INDEX idx_inventory_stock ON inventory(current_stock);
 ```
 
 **입출고 거래 테이블 (transactions)**
+
 ```sql
 -- 거래 테이블 생성
 CREATE TABLE transactions (
@@ -269,6 +283,7 @@ CREATE INDEX idx_transactions_date ON transactions(created_at DESC);
 ```
 
 **트리거 생성 (재고 자동 업데이트)**
+
 ```sql
 -- 입출고 시 재고 자동 업데이트 트리거
 CREATE TRIGGER update_inventory_stock 
@@ -284,3 +299,4 @@ BEGIN
     WHERE id = NEW.inventory_id;
 END;
 ```
+
