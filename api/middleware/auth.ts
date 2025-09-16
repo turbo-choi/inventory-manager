@@ -1,17 +1,23 @@
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import type { User } from '../../shared/types.js';
+import jwt, { type SignOptions, type JwtPayload } from 'jsonwebtoken';
+import type { UserRole } from '../../shared/types.js';
 
-// JWT 시크릿 키 (환경변수에서 가져오거나 기본값 사용)
-const JWT_SECRET = process.env.JWT_SECRET || 'inventory-management-secret-key';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+const JWT_SECRET: string = process.env.JWT_SECRET || 'inventory-management-secret-key';
+const JWT_EXPIRES_IN: SignOptions['expiresIn'] = (process.env.JWT_EXPIRES_IN ?? '24h') as SignOptions['expiresIn'];
+
+// 인증 컨텍스트용 최소 사용자 타입
+type AuthUser = {
+  id: number;
+  username: string;
+  role: UserRole;
+};
 
 // Request 인터페이스 확장 (사용자 정보 추가)
 declare global {
   namespace Express {
     interface Request {
-      user?: User;
+      user?: AuthUser;
     }
   }
 }
@@ -21,14 +27,15 @@ declare global {
  * @param user 사용자 정보
  * @returns JWT 토큰
  */
-export const generateToken = (user: User): string => {
-  const payload = {
+export const generateToken = (user: AuthUser): string => {
+  const payload: JwtPayload = {
     id: user.id,
     username: user.username,
     role: user.role
-  };
-  
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  } as unknown as JwtPayload;
+
+  const options: SignOptions = { expiresIn: JWT_EXPIRES_IN };
+  return jwt.sign(payload, JWT_SECRET, options);
 };
 
 /**
@@ -61,14 +68,14 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
       return;
     }
 
-    const decoded = verifyToken(token);
-    
+    const decoded = verifyToken(token) as JwtPayload & { id: number; username: string; role: UserRole };
+
     // 사용자 정보를 request 객체에 추가
     req.user = {
       id: decoded.id,
       username: decoded.username,
       role: decoded.role
-    } as User;
+    };
 
     next();
   } catch (error) {
@@ -138,12 +145,12 @@ export const optionalAuth = (req: Request, res: Response, next: NextFunction): v
     const token = authHeader && authHeader.split(' ')[1];
 
     if (token) {
-      const decoded = verifyToken(token);
+      const decoded = verifyToken(token) as JwtPayload & { id: number; username: string; role: UserRole };
       req.user = {
         id: decoded.id,
         username: decoded.username,
         role: decoded.role
-      } as User;
+      };
     }
 
     next();

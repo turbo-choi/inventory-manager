@@ -17,7 +17,7 @@ export function useAuth() {
   const isAdmin = computed(() => user.value?.role === 'admin');
   
   // 활성 사용자 확인
-  const isActiveUser = computed(() => user.value?.is_active === true);
+  const isActiveUser = computed(() => user.value?.status === 'active');
 
   /**
    * 로그인 함수

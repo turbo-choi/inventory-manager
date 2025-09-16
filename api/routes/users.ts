@@ -176,10 +176,10 @@ router.get('/:id', authenticateToken, async (req: Request, res: Response): Promi
  */
 router.post('/', authenticateToken, requireAdmin, async (req: Request, res: Response): Promise<void> => {
   try {
-    const { username, password, fullName, email, role }: CreateUserRequest = req.body;
+    const { username, password, full_name, email, role }: CreateUserRequest = req.body;
 
     // 입력 검증
-    if (!username || !password || !fullName || !email || !role) {
+    if (!username || !password || !full_name || !email || !role) {
       res.status(400).json({
         success: false,
         message: '모든 필드를 입력해주세요'
@@ -259,7 +259,7 @@ router.post('/', authenticateToken, requireAdmin, async (req: Request, res: Resp
 router.put('/:id', authenticateToken, async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = parseInt(req.params.id);
-    const { fullName, email, role, isActive }: UpdateUserRequest = req.body;
+    const { full_name, email, role, is_active }: UpdateUserRequest = req.body;
     
     // 관리자가 아닌 경우 자신의 정보만 수정 가능 (역할과 활성화 상태 제외)
     if (req.user!.role !== 'admin' && req.user!.id !== userId) {
@@ -271,7 +271,7 @@ router.put('/:id', authenticateToken, async (req: Request, res: Response): Promi
     }
 
     // 일반 사용자는 역할과 활성화 상태 변경 불가
-    if (req.user!.role !== 'admin' && (role !== undefined || isActive !== undefined)) {
+    if (req.user!.role !== 'admin' && (role !== undefined || is_active !== undefined)) {
       res.status(403).json({
         success: false,
         message: '역할과 활성화 상태는 관리자만 변경할 수 있습니다'
@@ -294,8 +294,8 @@ router.put('/:id', authenticateToken, async (req: Request, res: Response): Promi
     // 업데이트할 필드 구성
     const updateData: any = {};
 
-    if (fullName !== undefined) {
-      updateData.full_name = fullName;
+    if (full_name !== undefined) {
+      updateData.full_name = full_name;
     }
 
     if (email !== undefined) {
@@ -313,8 +313,8 @@ router.put('/:id', authenticateToken, async (req: Request, res: Response): Promi
       updateData.role = role;
     }
 
-    if (isActive !== undefined && req.user!.role === 'admin') {
-      updateData.is_active = isActive;
+    if (is_active !== undefined && req.user!.role === 'admin') {
+      updateData.is_active = is_active;
     }
 
     if (Object.keys(updateData).length === 0) {

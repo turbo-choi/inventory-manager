@@ -1,11 +1,11 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import LoginPage from '@/pages/LoginPage.vue'
 import DashboardPage from '@/pages/DashboardPage.vue'
 import HomePage from '@/pages/HomePage.vue'
 
 // 라우트 설정
-const routes = [
+const routes: RouteRecordRaw[] = [
   {
     path: '/',
     redirect: '/dashboard'

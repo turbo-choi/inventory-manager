@@ -165,10 +165,10 @@
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">{{ (item.current_stock ?? item.current_quantity ?? 0).toLocaleString() }}</div>
+                  <div class="text-sm font-medium text-gray-900">{{ item.current_stock.toLocaleString() }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">{{ (item.min_stock ?? item.minimum_quantity ?? 0).toLocaleString() }}</div>
+                  <div class="text-sm text-gray-500">{{ item.min_stock_level.toLocaleString() }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span :class="getStockStatusClass(item)">
@@ -512,8 +512,8 @@ const handleLogout = async () => {
  * 재고 상태 클래스 반환
  */
 const getStockStatusClass = (item: Inventory) => {
-  const current = (item as any).current_stock ?? (item as any).current_quantity ?? 0;
-  const min = (item as any).min_stock ?? (item as any).minimum_quantity ?? 0;
+  const current = item.current_stock || 0;
+  const min = item.min_stock_level || 0;
   if (current === 0) {
     return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800';
   } else if (current <= min) {
@@ -527,8 +527,8 @@ const getStockStatusClass = (item: Inventory) => {
  * 재고 상태 텍스트 반환
  */
 const getStockStatusText = (item: Inventory) => {
-  const current = (item as any).current_stock ?? (item as any).current_quantity ?? 0;
-  const min = (item as any).min_stock ?? (item as any).minimum_quantity ?? 0;
+  const current = item.current_stock || 0;
+  const min = item.min_stock_level || 0;
   if (current === 0) {
     return '재고 없음';
   } else if (current <= min) {
@@ -615,11 +615,10 @@ const loadInventory = async () => {
       // 백엔드 필드명을 프론트가 사용하는 필드로 매핑
       inventory.value = data.data.map((d: any) => ({
         ...d,
-        current_stock: d.current_quantity ?? d.current_stock ?? 0,
-        min_stock: d.minimum_quantity ?? d.min_stock ?? d.min_stock_level ?? 0,
-        // 추가 매핑: 단가, 위치 (편집 시 사용)
-        unit_price: d.unit_price ?? 0,
-        location: d.location ?? ''
+        current_stock: Number(d.current_stock ?? d.current_quantity ?? 0),
+        min_stock_level: Number(d.min_stock_level ?? d.minimum_quantity ?? d.min_stock ?? 0),
+        // 추가 매핑: 단가 (편집 시 사용)
+        unit_price: Number(d.unit_price ?? 0)
       }));
       pagination.value = data.pagination;
     }
@@ -645,25 +644,24 @@ const saveItem = async () => {
       name: itemForm.value.name?.trim(),
       description: itemForm.value.description?.trim() || '',
       sku: itemForm.value.sku?.trim(),
-      categoryId: itemForm.value.category_id ? Number(itemForm.value.category_id) : undefined,
-      minimumQuantity: Number(itemForm.value.min_stock),
-      unitPrice: Number(itemForm.value.unit_price),
-      location: itemForm.value.location?.trim() || undefined,
+      category_id: itemForm.value.category_id ? Number(itemForm.value.category_id) : undefined,
+      min_stock_level: Number(itemForm.value.min_stock),
+      unit_price: Number(itemForm.value.unit_price)
     } as any;
 
     const payload = method === 'POST'
       ? {
           ...basePayload,
-          currentQuantity: Number(itemForm.value.current_stock),
+          current_stock: Number(itemForm.value.current_stock)
         }
       : basePayload;
 
     // 간단한 클라이언트 측 유효성 검사
-    if (!payload.name || !payload.sku || !payload.categoryId || Number.isNaN(payload.unitPrice) || Number.isNaN(payload.minimumQuantity) || (method === 'POST' && Number.isNaN(payload.currentQuantity))) {
+    if (!payload.name || !payload.sku || !payload.category_id || Number.isNaN(payload.unit_price) || Number.isNaN(payload.min_stock_level) || (method === 'POST' && Number.isNaN(payload.current_stock))) {
       alert('필수값을 모두 입력해주세요.');
       return;
     }
-    if (payload.unitPrice < 0 || payload.minimumQuantity < 0 || (method === 'POST' && payload.currentQuantity < 0)) {
+    if (payload.unit_price < 0 || payload.min_stock_level < 0 || (method === 'POST' && payload.current_stock < 0)) {
       alert('수량과 단가는 0 이상이어야 합니다.');
       return;
     }
@@ -698,10 +696,10 @@ const editItem = (item: Inventory) => {
     name: item.name,
     sku: item.sku,
     description: item.description || '',
-    category_id: item.category_id.toString(),
-    current_stock: (item as any).current_stock ?? (item as any).current_quantity ?? 0,
-    min_stock: (item as any).min_stock ?? (item as any).minimum_quantity ?? 0,
-    unit_price: (item as any).unit_price ?? 0,
+    category_id: String(item.category_id ?? ''),
+    current_stock: item.current_stock ?? 0,
+    min_stock: item.min_stock_level ?? 0,
+    unit_price: item.unit_price ?? 0,
     location: (item as any).location || ''
   };
   showEditModal.value = true;

@@ -16,7 +16,6 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, password }: LoginRequest = req.body;
 
-    // 입력 검증
     if (!username || !password) {
       res.status(400).json({
         success: false,
@@ -25,7 +24,6 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // 데이터베이스에서 사용자 조회
     const user = dbManager.getUser(username);
 
     if (!user) {
@@ -36,7 +34,6 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // 비밀번호 검증
     const storedHash = (user as any).password_hash ?? (user as any).password;
     const isPasswordValid = storedHash ? await bcrypt.compare(password, storedHash) : false;
     
@@ -48,16 +45,25 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // 비밀번호 해시 제거
-    const { password_hash, ...userWithoutPassword } = user;
-    
-    // JWT 토큰 생성
-    const token = generateToken(userWithoutPassword as User);
+    const { password_hash, ...userWithoutPassword } = user as any;
+
+    const token = generateToken({ id: user.id, username: user.username, role: user.role });
+
+    const mappedUser: User = {
+      id: user.id,
+      name: user.username,
+      email: user.email,
+      role: user.role,
+      status: 'active',
+      created_at: user.created_at,
+      updated_at: user.updated_at,
+      last_login: null
+    };
 
     res.json({
       success: true,
       token,
-      user: userWithoutPassword
+      user: mappedUser
     } as LoginResponse);
 
   } catch (error) {
@@ -83,9 +89,8 @@ router.get('/me', authenticateToken, async (req: Request, res: Response): Promis
       return;
     }
 
-    // 데이터베이스에서 최신 사용자 정보 조회
     const allUsers = dbManager.getAllUsers();
-    const user = allUsers.find(u => u.id === req.user.id);
+    const user = allUsers.find(u => u.id === req.user!.id);
 
     if (!user) {
       res.status(404).json({
@@ -95,9 +100,20 @@ router.get('/me', authenticateToken, async (req: Request, res: Response): Promis
       return;
     }
 
+    const mappedUser: User = {
+      id: user.id,
+      name: user.username,
+      email: user.email,
+      role: user.role,
+      status: 'active',
+      created_at: user.created_at,
+      updated_at: user.updated_at,
+      last_login: null
+    };
+
     res.json({
       success: true,
-      data: user
+      data: mappedUser
     } as ApiResponse<User>);
 
   } catch (error) {
@@ -133,7 +149,6 @@ router.put('/change-password', authenticateToken, async (req: Request, res: Resp
       return;
     }
 
-    // 현재 비밀번호 확인
     const allUsers = dbManager.getAllUsers();
     const user = allUsers.find(u => u.id === req.user!.id);
     
@@ -155,10 +170,8 @@ router.put('/change-password', authenticateToken, async (req: Request, res: Resp
       return;
     }
 
-    // 새 비밀번호 해시화 및 업데이트
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
     
-    // 사용자 정보 업데이트
     dbManager.updateUser(req.user!.id, { password_hash: hashedNewPassword });
 
     res.json({

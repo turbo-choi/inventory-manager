@@ -30,9 +30,12 @@ interface InventoryItem {
   id: number;
   name: string;
   description?: string;
+  sku: string;
   category_id: number;
   quantity: number;
+  minimum_quantity: number;
   unit_price: number;
+  unit: string;
   supplier?: string;
   location?: string;
   created_at: string;
@@ -159,8 +162,11 @@ export class DatabaseManager {
           name: '노트북',
           description: '업무용 노트북',
           category_id: 1,
+          sku: 'NB-001',
           quantity: 10,
+          minimum_quantity: 2,
           unit_price: 1500000,
+          unit: 'pcs',
           supplier: 'Tech Corp',
           location: '창고 A-1',
           created_at: now,
@@ -171,8 +177,11 @@ export class DatabaseManager {
           name: '볼펜',
           description: '검정 볼펜',
           category_id: 2,
+          sku: 'PEN-001',
           quantity: 100,
+          minimum_quantity: 20,
           unit_price: 1000,
+          unit: 'pcs',
           supplier: 'Office Supply',
           location: '창고 B-1',
           created_at: now,
@@ -401,17 +410,23 @@ export class DatabaseManager {
     return newItem;
   }
 
-  /**
-   * 재고 아이템 업데이트
-   */
   updateInventoryItem(id: number, updates: Partial<Omit<InventoryItem, 'id' | 'created_at'>>): InventoryItem | null {
-    const item = this.data.inventory.find(item => item.id === id);
-    if (item) {
-      Object.assign(item, updates, { updated_at: new Date().toISOString() });
-      this.saveData();
-      return item;
-    }
-    return null;
+    const idx = this.data.inventory.findIndex(item => item.id === id);
+    if (idx === -1) return null;
+
+    const current = this.data.inventory[idx];
+    const updated: InventoryItem = { ...current, ...updates, updated_at: new Date().toISOString() };
+    this.data.inventory[idx] = updated;
+    this.saveData();
+    return updated;
+  }
+
+  deleteInventoryItem(id: number): boolean {
+    const idx = this.data.inventory.findIndex(item => item.id === id);
+    if (idx === -1) return false;
+    this.data.inventory.splice(idx, 1);
+    this.saveData();
+    return true;
   }
 
   /**
@@ -437,6 +452,36 @@ export class DatabaseManager {
   }
 
   /**
+   * 거래 내역 수정 (메모만 수정 가능)
+   */
+  updateTransaction(id: number, updates: Partial<Pick<Transaction, 'notes'>>): Transaction | null {
+    const idx = this.data.transactions.findIndex(t => t.id === id);
+    if (idx === -1) return null;
+
+    const current = this.data.transactions[idx];
+    const updated: Transaction = {
+      ...current,
+      ...(updates.hasOwnProperty('notes') ? { notes: updates.notes } : {})
+    };
+
+    this.data.transactions[idx] = updated;
+    this.saveData();
+    return updated;
+  }
+
+  /**
+   * 거래 내역 삭제
+   */
+  deleteTransaction(id: number): boolean {
+    const idx = this.data.transactions.findIndex(t => t.id === id);
+    if (idx === -1) return false;
+
+    this.data.transactions.splice(idx, 1);
+    this.saveData();
+    return true;
+  }
+
+  /**
    * 데이터베이스 연결 종료 (JSON 기반에서는 불필요)
    */
   close(): void {
@@ -448,3 +493,11 @@ export class DatabaseManager {
 const dbManager = new DatabaseManager();
 
 export default dbManager;
+
+// deleteInventoryItem(id: number): boolean {
+//   const idx = this.data.inventory.findIndex(item => item.id === id);
+//   if (idx === -1) return false;
+//   this.data.inventory.splice(idx, 1);
+//   this.saveData();
+//   return true;
+// }

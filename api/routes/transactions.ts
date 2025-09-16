@@ -22,31 +22,25 @@ router.get('/', authenticateToken, requireActiveUser, (req, res) => {
     const endDate = req.query.end_date as string;
     const search = (req.query.search as string)?.toLowerCase()?.trim();
 
-    // 모든 데이터 조회
     const allTransactions = dbManager.getAllTransactions();
     const allInventory = dbManager.getAllInventoryItems();
     const allUsers = dbManager.getAllUsers();
 
-    // 필터링
     let filteredTransactions = allTransactions.filter(transaction => {
-      // 유형 필터
       if (type && transaction.type !== type) return false;
-      // 재고 ID 필터
-      if (inventoryId && transaction.inventory_id !== parseInt(inventoryId)) return false;
+      if (inventoryId && transaction.item_id !== parseInt(inventoryId)) return false;
 
-      // 날짜 필터링 (start_date 이상, end_date '포함' 처리: 다음날 0시 미만)
       const createdAt = new Date(transaction.created_at);
       if (startDate && createdAt < new Date(startDate)) return false;
       if (endDate) {
         const end = new Date(endDate);
         const endNext = new Date(end);
-        endNext.setDate(end.getDate() + 1); // end_date 포함되도록 다음날 0시 미만 비교
+        endNext.setDate(end.getDate() + 1);
         if (createdAt >= endNext) return false;
       }
 
-      // 검색 필터 (이름/sku 부분 일치)
       if (search) {
-        const inv = allInventory.find(item => item.id === transaction.inventory_id);
+        const inv = allInventory.find(item => item.id === transaction.item_id);
         const name = (inv?.name || '').toLowerCase();
         const sku = (inv as any)?.sku ? String((inv as any).sku).toLowerCase() : '';
         if (!name.includes(search) && !sku.includes(search)) return false;
@@ -55,22 +49,19 @@ router.get('/', authenticateToken, requireActiveUser, (req, res) => {
       return true;
     });
 
-    // 정렬 (기본: 최신순)
     filteredTransactions = filteredTransactions.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-    // 페이지네이션
     const total = filteredTransactions.length;
     const paginated = filteredTransactions.slice(offset, offset + limit);
 
-    // 응답 데이터 구성 (조인 정보 포함)
     const transactions = paginated.map(transaction => {
-      const inventory = allInventory.find(item => item.id === transaction.inventory_id);
-      const user = allUsers.find(u => u.id === transaction.created_by);
+      const inventory = allInventory.find(item => item.id === transaction.item_id);
+      const user = allUsers.find(u => u.id === transaction.user_id);
       
       return {
         id: transaction.id,
-        inventory_id: transaction.inventory_id,
-        user_id: transaction.created_by, // 공용 타입과 일치
+        inventory_id: transaction.item_id,
+        user_id: transaction.user_id,
         type: transaction.type,
         quantity: transaction.quantity,
         notes: transaction.notes,
@@ -123,13 +114,13 @@ router.get('/:id(\\d+)', authenticateToken, requireActiveUser, (req, res) => {
       });
     }
 
-    const inventory = allInventory.find(item => item.id === foundTransaction.inventory_id);
-    const user = allUsers.find(u => u.id === foundTransaction.created_by);
+    const inventory = allInventory.find(item => item.id === foundTransaction.item_id);
+    const user = allUsers.find(u => u.id === foundTransaction.user_id);
 
     const transaction = {
       id: foundTransaction.id,
-      inventory_id: foundTransaction.inventory_id,
-      user_id: foundTransaction.created_by,
+      inventory_id: foundTransaction.item_id,
+      user_id: foundTransaction.user_id,
       type: foundTransaction.type,
       quantity: foundTransaction.quantity,
       notes: foundTransaction.notes,
@@ -164,7 +155,6 @@ router.post('/', authenticateToken, requireActiveUser, (req, res) => {
     const { inventory_id, type, quantity, notes } = req.body;
     const userId = req.user!.id;
 
-    // 입력 검증
     if (!inventory_id || !type || !quantity) {
       return res.status(400).json({
         success: false,
@@ -186,7 +176,6 @@ router.post('/', authenticateToken, requireActiveUser, (req, res) => {
       });
     }
 
-    // 재고 존재 확인
     const allInventory = dbManager.getAllInventoryItems();
     const inventory = allInventory.find(item => item.id === parseInt(inventory_id));
     if (!inventory) {
@@ -196,9 +185,9 @@ router.post('/', authenticateToken, requireActiveUser, (req, res) => {
       });
     }
 
-    // 수량 업데이트 및 거래 추가
     const isIn = type === 'in';
-    const updatedQuantity = isIn ? inventory.quantity + parseInt(quantity) : inventory.quantity - parseInt(quantity);
+    const qty = parseInt(quantity);
+    const updatedQuantity = isIn ? inventory.quantity + qty : inventory.quantity - qty;
     if (updatedQuantity < 0) {
       return res.status(400).json({
         success: false,
@@ -208,12 +197,15 @@ router.post('/', authenticateToken, requireActiveUser, (req, res) => {
 
     dbManager.updateInventoryItem(inventory.id, { quantity: updatedQuantity });
 
+    const unitPrice = (inventory as any).unit_price ?? 0;
     const newTransaction = dbManager.createTransaction({
-      inventory_id: inventory.id,
+      item_id: inventory.id,
+      user_id: userId,
       type,
-      quantity: parseInt(quantity),
-      notes: notes || null,
-      created_by: userId
+      quantity: qty,
+      unit_price: unitPrice,
+      total_price: unitPrice * qty,
+      notes: notes || undefined
     });
 
     const createdTransaction = newTransaction;
@@ -222,12 +214,12 @@ router.post('/', authenticateToken, requireActiveUser, (req, res) => {
       success: true,
       data: {
         id: createdTransaction.id,
-        inventory_id: createdTransaction.inventory_id,
+        inventory_id: createdTransaction.item_id,
+        user_id: createdTransaction.user_id,
         type: createdTransaction.type,
         quantity: createdTransaction.quantity,
         notes: createdTransaction.notes,
         created_at: createdTransaction.created_at,
-        created_by: createdTransaction.created_by,
       } as unknown as Transaction,
       message: '거래가 성공적으로 생성되었습니다.'
     } as ApiResponse<Transaction>;
@@ -253,7 +245,6 @@ router.put('/:id(\\d+)', authenticateToken, requireActiveUser, (req, res) => {
     const { id } = req.params;
     const { notes } = req.body;
 
-    // 거래 존재 확인
     const allTransactions = dbManager.getAllTransactions();
     const existingTransaction = allTransactions.find(t => t.id === parseInt(id));
     if (!existingTransaction) {
@@ -263,27 +254,25 @@ router.put('/:id(\\d+)', authenticateToken, requireActiveUser, (req, res) => {
       });
     }
 
-    // 메모 업데이트
-    dbManager.updateTransaction(parseInt(id), { notes: notes || null });
+    dbManager.updateTransaction(parseInt(id), { notes: notes || undefined });
 
-    // 업데이트된 거래 조회
     const allInventory = dbManager.getAllInventoryItems();
     const allUsers = dbManager.getAllUsers();
     const updatedTransactions = dbManager.getAllTransactions();
     const updatedTransaction = updatedTransactions.find(t => t.id === parseInt(id));
-    const inventory = allInventory.find(item => item.id === updatedTransaction!.inventory_id);
-    const user = allUsers.find(u => u.id === updatedTransaction!.created_by);
+    const inventory = allInventory.find(item => item.id === updatedTransaction!.item_id);
+    const user = allUsers.find(u => u.id === updatedTransaction!.user_id);
 
     const transactionData = {
       id: updatedTransaction!.id,
-      inventory_id: updatedTransaction!.inventory_id,
+      inventory_id: updatedTransaction!.item_id,
+      user_id: updatedTransaction!.user_id,
       type: updatedTransaction!.type,
       quantity: updatedTransaction!.quantity,
       notes: updatedTransaction!.notes,
       created_at: updatedTransaction!.created_at,
-      created_by: updatedTransaction!.created_by,
       inventory_name: inventory?.name || '',
-      sku: inventory?.sku || '',
+      sku: (inventory as any)?.sku || '',
       created_by_username: user?.username || ''
     };
 
@@ -312,7 +301,6 @@ router.delete('/:id(\\d+)', authenticateToken, requireActiveUser, (req, res) => 
   try {
     const { id } = req.params;
 
-    // 거래 존재 확인
     const allTransactions = dbManager.getAllTransactions();
     const transaction = allTransactions.find(t => t.id === parseInt(id));
     if (!transaction) {
@@ -322,15 +310,13 @@ router.delete('/:id(\\d+)', authenticateToken, requireActiveUser, (req, res) => 
       });
     }
 
-    // 거래 삭제 전 재고 되돌리기
     const allInventory = dbManager.getAllInventoryItems();
-    const inventory = allInventory.find(item => item.id === transaction.inventory_id);
+    const inventory = allInventory.find(item => item.id === transaction.item_id);
     if (inventory) {
       const restoredQuantity = transaction.type === 'in' ? inventory.quantity - transaction.quantity : inventory.quantity + transaction.quantity;
       dbManager.updateInventoryItem(inventory.id, { quantity: restoredQuantity });
     }
 
-    // 거래 삭제
     dbManager.deleteTransaction(parseInt(id));
 
     res.json({
@@ -361,18 +347,18 @@ router.get('/inventory/:inventoryId', authenticateToken, requireActiveUser, (req
     const allUsers = dbManager.getAllUsers();
 
     const inventoryTransactions = allTransactions
-      .filter(t => t.inventory_id === parseInt(inventoryId))
+      .filter(t => t.item_id === parseInt(inventoryId))
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     const total = inventoryTransactions.length;
     const paginated = inventoryTransactions.slice(offset, offset + limit);
 
     const transactions = paginated.map(transaction => {
-      const user = allUsers.find(u => u.id === transaction.created_by);
+      const user = allUsers.find(u => u.id === transaction.user_id);
       return {
         id: transaction.id,
-        inventory_id: transaction.inventory_id,
-        user_id: transaction.created_by,
+        inventory_id: transaction.item_id,
+        user_id: transaction.user_id,
         type: transaction.type,
         quantity: transaction.quantity,
         notes: transaction.notes,

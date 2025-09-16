@@ -14,7 +14,7 @@
           </div>
           
           <div class="flex items-center space-x-4">
-            <span class="text-sm text-gray-600">{{ user?.username }}님 환영합니다</span>
+            <span class="text-sm text-gray-600">{{ user?.name }}님 환영합니다</span>
             <button
               @click="handleLogout"
               class="text-sm text-gray-500 hover:text-gray-700 transition-colors"
@@ -185,8 +185,8 @@
                 <p class="text-xs text-gray-500">SKU: {{ item.sku }}</p>
               </div>
               <div class="text-right">
-                <p class="text-sm font-medium text-red-600">{{ (item.current_stock ?? item.current_quantity ?? item.currentQuantity ?? 0).toLocaleString() }}</p>
-                <p class="text-xs text-gray-500">최소: {{ (item.min_stock ?? item.minimum_quantity ?? item.min_stock_level ?? 0).toLocaleString() }}</p>
+                <p class="text-sm font-medium text-red-600">{{ (item.current_stock ?? 0).toLocaleString() }}</p>
+                <p class="text-xs text-gray-500">최소: {{ (item.min_stock_level ?? 0).toLocaleString() }}</p>
               </div>
             </div>
             <router-link
@@ -262,7 +262,7 @@
                 ]">
                   {{ transaction.type === 'in' ? '+' : '-' }}{{ transaction.quantity }}
                 </p>
-                <p class="text-xs text-gray-500">{{ transaction.created_by_username }}</p>
+                <p class="text-xs text-gray-500">{{ transaction.user_name }}</p>
               </div>
             </div>
             <router-link
@@ -332,12 +332,12 @@ const loadDashboardData = async () => {
     const inventoryData = await inventoryResponse.json();
     
     if (inventoryData.success) {
-      // 1) 응답 정규화: 혼재된 필드명을 current_stock / min_stock로 통일
+      // 1) 응답 정규화: 혼재된 필드명을 current_stock / min_stock_level로 통일
       const rawInventories = inventoryData.data as any[];
       const normalized: Inventory[] = rawInventories.map((d: any) => ({
         ...d,
-        current_stock: Number(d.current_stock ?? d.current_quantity ?? d.currentQuantity ?? 0),
-        min_stock: Number(d.min_stock ?? d.minimum_quantity ?? d.min_stock_level ?? 0),
+        current_stock: Number(d.current_stock ?? 0),
+        min_stock_level: Number(d.min_stock_level ?? 0),
       }));
 
       // 2) 정규화된 데이터로 통계 계산
@@ -345,7 +345,7 @@ const loadDashboardData = async () => {
       stats.value.totalQuantity = normalized.reduce((sum: number, item: Inventory) => sum + (Number(item.current_stock) || 0), 0);
       
       // 부족한 재고 필터링
-      lowStockItems.value = normalized.filter((item: Inventory) => (Number(item.current_stock) || 0) <= (Number(item.min_stock) || 0));
+      lowStockItems.value = normalized.filter((item: Inventory) => (Number(item.current_stock) || 0) <= (Number(item.min_stock_level) || 0));
       stats.value.lowStockItems = lowStockItems.value.length;
     }
 

@@ -60,10 +60,10 @@ router.get('/', authenticateToken, async (req: Request, res: Response): Promise<
         sku: item.sku,
         category_id: item.category_id,
         category_name: categoryMap.get(item.category_id) || '',
-        current_quantity: item.quantity,
-        minimum_quantity: item.minimum_quantity,
+        current_stock: item.quantity,
+        min_stock_level: item.minimum_quantity,
         unit_price: item.unit_price,
-        location: item.location,
+        unit: item.unit,
         created_at: item.created_at,
         updated_at: item.updated_at
       }));
@@ -120,10 +120,10 @@ router.get('/:id(\\d+)', authenticateToken, async (req: Request, res: Response):
       sku: inventoryItem.sku,
       category_id: inventoryItem.category_id,
       category_name: categoryMap.get(inventoryItem.category_id) || '',
-      current_quantity: inventoryItem.quantity,
-      minimum_quantity: inventoryItem.minimum_quantity,
+      current_stock: inventoryItem.quantity,
+      min_stock_level: inventoryItem.minimum_quantity,
       unit_price: inventoryItem.unit_price,
-      location: inventoryItem.location,
+      unit: inventoryItem.unit,
       created_at: inventoryItem.created_at,
       updated_at: inventoryItem.updated_at
     };
@@ -152,15 +152,14 @@ router.post('/', authenticateToken, requireAdmin, async (req: Request, res: Resp
       name, 
       description, 
       sku, 
-      categoryId, 
-      currentQuantity, 
-      minimumQuantity, 
-      unitPrice, 
-      location 
+      category_id, 
+      current_stock, 
+      min_stock_level, 
+      unit_price 
     }: CreateInventoryRequest = req.body;
 
     // 입력 검증
-    if (!name || !sku || categoryId === undefined || currentQuantity === undefined || minimumQuantity === undefined || unitPrice === undefined) {
+    if (!name || !sku || category_id === undefined || current_stock === undefined || min_stock_level === undefined || unit_price === undefined) {
       res.status(400).json({
         success: false,
         message: '필수 필드를 모두 입력해주세요'
@@ -168,7 +167,7 @@ router.post('/', authenticateToken, requireAdmin, async (req: Request, res: Resp
       return;
     }
 
-    if (currentQuantity < 0 || minimumQuantity < 0 || unitPrice < 0) {
+    if (current_stock < 0 || min_stock_level < 0 || unit_price < 0) {
       res.status(400).json({
         success: false,
         message: '수량과 가격은 0 이상이어야 합니다'
@@ -190,7 +189,7 @@ router.post('/', authenticateToken, requireAdmin, async (req: Request, res: Resp
 
     // 카테고리 존재 확인
     const allCategories = dbManager.getAllCategories();
-    const category = allCategories.find(cat => cat.id === categoryId);
+    const category = allCategories.find(cat => cat.id === category_id);
     
     if (!category) {
       res.status(400).json({
@@ -205,11 +204,11 @@ router.post('/', authenticateToken, requireAdmin, async (req: Request, res: Resp
       name,
       description,
       sku,
-      category_id: categoryId,
-      quantity: currentQuantity,
-      minimum_quantity: minimumQuantity,
-      unit_price: unitPrice,
-      location
+      category_id,
+      quantity: current_stock,
+      minimum_quantity: min_stock_level,
+      unit_price,
+      unit: (req.body as any).unit ?? 'pcs'
     });
     
     // 응답용 데이터 구성
@@ -219,11 +218,11 @@ router.post('/', authenticateToken, requireAdmin, async (req: Request, res: Resp
       description: newInventoryItem.description,
       sku: newInventoryItem.sku,
       category_id: newInventoryItem.category_id,
-      category_name: category.name,
-      current_quantity: newInventoryItem.quantity,
-      minimum_quantity: newInventoryItem.minimum_quantity,
+      category_name: category?.name || '',
+      current_stock: newInventoryItem.quantity,
+      min_stock_level: newInventoryItem.minimum_quantity,
       unit_price: newInventoryItem.unit_price,
-      location: newInventoryItem.location,
+      unit: newInventoryItem.unit,
       created_at: newInventoryItem.created_at,
       updated_at: newInventoryItem.updated_at
     };
@@ -254,11 +253,11 @@ router.put('/:id(\\d+)', authenticateToken, requireAdmin, async (req: Request, r
       name, 
       description, 
       sku, 
-      categoryId, 
-      minimumQuantity, 
-      unitPrice, 
-      location 
-    }: UpdateInventoryRequest = req.body;
+      category_id, 
+      min_stock_level, 
+      unit_price, 
+      unit
+    }: UpdateInventoryRequest & { unit?: string } = req.body;
 
     // 기존 재고 확인
     const allInventory = dbManager.getAllInventoryItems();
@@ -286,9 +285,9 @@ router.put('/:id(\\d+)', authenticateToken, requireAdmin, async (req: Request, r
     }
 
     // 카테고리 존재 확인
-    if (categoryId) {
+    if (category_id) {
       const allCategories = dbManager.getAllCategories();
-      const category = allCategories.find(cat => cat.id === categoryId);
+      const category = allCategories.find(cat => cat.id === category_id);
       
       if (!category) {
         res.status(400).json({
@@ -318,37 +317,37 @@ router.put('/:id(\\d+)', authenticateToken, requireAdmin, async (req: Request, r
       hasUpdates = true;
     }
 
-    if (categoryId !== undefined) {
-      updateData.category_id = categoryId;
+    if (category_id !== undefined) {
+      updateData.category_id = category_id;
       hasUpdates = true;
     }
 
-    if (minimumQuantity !== undefined) {
-      if (minimumQuantity < 0) {
+    if (min_stock_level !== undefined) {
+      if (min_stock_level < 0) {
         res.status(400).json({
           success: false,
           message: '최소 수량은 0 이상이어야 합니다'
         } as ApiResponse);
         return;
       }
-      updateData.minimum_quantity = minimumQuantity;
+      updateData.minimum_quantity = min_stock_level;
       hasUpdates = true;
     }
 
-    if (unitPrice !== undefined) {
-      if (unitPrice < 0) {
+    if (unit_price !== undefined) {
+      if (unit_price < 0) {
         res.status(400).json({
           success: false,
           message: '단가는 0 이상이어야 합니다'
         } as ApiResponse);
         return;
       }
-      updateData.unit_price = unitPrice;
+      updateData.unit_price = unit_price;
       hasUpdates = true;
     }
 
-    if (location !== undefined) {
-      updateData.location = location;
+    if (unit !== undefined) {
+      updateData.unit = unit;
       hasUpdates = true;
     }
 
@@ -376,10 +375,10 @@ router.put('/:id(\\d+)', authenticateToken, requireAdmin, async (req: Request, r
       sku: updatedInventoryItem!.sku,
       category_id: updatedInventoryItem!.category_id,
       category_name: category?.name || '',
-      current_quantity: updatedInventoryItem!.quantity,
-      minimum_quantity: updatedInventoryItem!.minimum_quantity,
+      current_stock: updatedInventoryItem!.quantity,
+      min_stock_level: updatedInventoryItem!.minimum_quantity,
       unit_price: updatedInventoryItem!.unit_price,
-      location: updatedInventoryItem!.location,
+      unit: updatedInventoryItem!.unit,
       created_at: updatedInventoryItem!.created_at,
       updated_at: updatedInventoryItem!.updated_at
     };
@@ -391,7 +390,7 @@ router.put('/:id(\\d+)', authenticateToken, requireAdmin, async (req: Request, r
     } as ApiResponse<Inventory>);
 
   } catch (error) {
-    console.error('재고 정보 수정 오류:', error);
+    console.error('재고 수정 오류:', error);
     res.status(500).json({
       success: false,
       message: '서버 오류가 발생했습니다'
@@ -421,7 +420,7 @@ router.delete('/:id(\\d+)', authenticateToken, requireAdmin, async (req: Request
 
     // 관련 거래 내역 확인
     const allTransactions = dbManager.getAllTransactions();
-    const relatedTransactions = allTransactions.filter(transaction => transaction.inventory_id === inventoryId);
+    const relatedTransactions = allTransactions.filter(transaction => transaction.item_id === inventoryId);
     
     if (relatedTransactions.length > 0) {
       res.status(400).json({
@@ -590,14 +589,19 @@ router.get('/alerts/low-stock', authenticateToken, async (req: Request, res: Res
         return {
           id: item.id,
           name: item.name,
+          description: item.description,
           sku: item.sku,
+          category_id: item.category_id,
           category_name: category?.name || '',
-          current_quantity: item.quantity,
-          minimum_quantity: item.minimum_quantity,
-          location: item.location
+          current_stock: item.quantity,
+          min_stock_level: item.minimum_quantity,
+          unit_price: item.unit_price,
+          unit: item.unit,
+          created_at: item.created_at,
+          updated_at: item.updated_at
         };
       })
-      .sort((a, b) => (a.current_quantity - a.minimum_quantity) - (b.current_quantity - b.minimum_quantity));
+      .sort((a, b) => (a.current_stock - a.min_stock_level) - (b.current_stock - b.min_stock_level));
 
     res.json({
       success: true,
