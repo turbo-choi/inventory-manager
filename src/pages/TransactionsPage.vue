@@ -36,7 +36,7 @@
             <input
               v-model="filters.search"
               type="text"
-              placeholder="상품명 또는 SKU 검색"
+              placeholder="상품명·SKU·카테고리 검색"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               @input="debouncedSearch"
             />
@@ -224,7 +224,9 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div>
-                    <div class="text-sm font-medium text-gray-900">{{ transaction.inventory_name }}</div>
+                    <div class="text-sm font-medium text-gray-900">
+                      <span v-if="transaction.category_name" class="text-gray-500 mr-1">[{{ transaction.category_name }}]</span>{{ transaction.inventory_name }}
+                    </div>
                     <div class="text-sm text-gray-500">SKU: {{ transaction.inventory_sku }}</div>
                   </div>
                 </td>
@@ -336,7 +338,7 @@
             
             <div>
               <label class="block text-sm font-medium text-gray-700">상품 정보</label>
-              <p class="text-sm text-gray-900">{{ selectedTransaction.inventory_name }}</p>
+              <p class="text-sm text-gray-900"><span v-if="selectedTransaction.category_name" class="text-gray-500 mr-1">[{{ selectedTransaction.category_name }}]</span>{{ selectedTransaction.inventory_name }}</p>
               <p class="text-xs text-gray-500">SKU: {{ selectedTransaction.inventory_sku }}</p>
             </div>
             

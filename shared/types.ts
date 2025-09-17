@@ -112,6 +112,7 @@ export interface Transaction {
   inventory_name?: string;
   inventory_sku?: string;
   user_name?: string;
+  category_name?: string;
 }
 
 // 입출고 거래 생성 요청 인터페이스

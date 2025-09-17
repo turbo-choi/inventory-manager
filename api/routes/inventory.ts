@@ -34,7 +34,8 @@ router.get('/', authenticateToken, async (req: Request, res: Response): Promise<
       allInventory = allInventory.filter(item => 
         item.name.toLowerCase().includes(searchLower) ||
         (item.description && item.description.toLowerCase().includes(searchLower)) ||
-        item.sku.toLowerCase().includes(searchLower)
+        item.sku.toLowerCase().includes(searchLower) ||
+        String(categoryMap.get(item.category_id) || '').toLowerCase().includes(searchLower)
       );
     }
 

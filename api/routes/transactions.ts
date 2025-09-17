@@ -25,65 +25,75 @@ router.get('/', authenticateToken, requireActiveUser, (req, res) => {
     const allTransactions = dbManager.getAllTransactions();
     const allInventory = dbManager.getAllInventoryItems();
     const allUsers = dbManager.getAllUsers();
+    const allCategories = dbManager.getAllCategories();
+    const categoryMap = new Map(allCategories.map(cat => [cat.id, cat.name]));
 
     let filteredTransactions = allTransactions.filter(transaction => {
+      const t: any = transaction as any;
+      const itemId = t.item_id ?? t.inventory_id;
+      const userId = t.user_id ?? t.created_by;
       if (type && transaction.type !== type) return false;
-      if (inventoryId && transaction.item_id !== parseInt(inventoryId)) return false;
+      if (inventoryId && itemId !== parseInt(inventoryId)) return false;
 
-      const createdAt = new Date(transaction.created_at);
-      if (startDate && createdAt < new Date(startDate)) return false;
-      if (endDate) {
-        const end = new Date(endDate);
-        const endNext = new Date(end);
-        endNext.setDate(end.getDate() + 1);
-        if (createdAt >= endNext) return false;
-      }
+       const createdAt = new Date(transaction.created_at);
+       if (startDate && createdAt < new Date(startDate)) return false;
+       if (endDate) {
+         const end = new Date(endDate);
+         const endNext = new Date(end);
+         endNext.setDate(end.getDate() + 1);
+         if (createdAt >= endNext) return false;
+       }
 
-      if (search) {
-        const inv = allInventory.find(item => item.id === transaction.item_id);
+       if (search) {
+        const inv = allInventory.find(item => item.id === itemId);
         const name = (inv?.name || '').toLowerCase();
         const sku = (inv as any)?.sku ? String((inv as any).sku).toLowerCase() : '';
-        if (!name.includes(search) && !sku.includes(search)) return false;
+        const category = inv ? String(categoryMap.get(inv.category_id) || '').toLowerCase() : '';
+        if (!name.includes(search) && !sku.includes(search) && !category.includes(search)) return false;
       }
 
-      return true;
-    });
+       return true;
+     });
 
-    filteredTransactions = filteredTransactions.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+     filteredTransactions = filteredTransactions.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-    const total = filteredTransactions.length;
-    const paginated = filteredTransactions.slice(offset, offset + limit);
+     const total = filteredTransactions.length;
+     const paginated = filteredTransactions.slice(offset, offset + limit);
 
     const transactions = paginated.map(transaction => {
-      const inventory = allInventory.find(item => item.id === transaction.item_id);
-      const user = allUsers.find(u => u.id === transaction.user_id);
-      
-      return {
-        id: transaction.id,
-        inventory_id: transaction.item_id,
-        user_id: transaction.user_id,
+      const t: any = transaction as any;
+      const itemId = t.item_id ?? t.inventory_id;
+      const userId = t.user_id ?? t.created_by;
+      const inventory = allInventory.find(item => item.id === itemId);
+      const user = allUsers.find(u => u.id === userId);
+       
+       return {
+         id: transaction.id,
+        inventory_id: itemId,
+        user_id: userId,
         type: transaction.type,
         quantity: transaction.quantity,
         notes: transaction.notes,
         created_at: transaction.created_at,
         inventory_name: inventory?.name || '',
         inventory_sku: (inventory as any)?.sku || '',
+        category_name: inventory ? (categoryMap.get(inventory.category_id) || '') : '',
         user_name: user?.username || ''
-      };
-    });
+       };
+     });
 
-    const response: PaginatedResponse<Transaction> = {
-      success: true,
-      data: transactions as unknown as Transaction[],
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit)
-      }
-    };
+     const response: PaginatedResponse<Transaction> = {
+       success: true,
+       data: transactions as unknown as Transaction[],
+       pagination: {
+         page,
+         limit,
+         total,
+         totalPages: Math.ceil(total / limit)
+       }
+     };
 
-    res.json(response);
+     res.json(response);
   } catch (error) {
     console.error('Error fetching transactions:', error);
     res.status(500).json({

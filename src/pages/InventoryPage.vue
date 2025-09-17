@@ -42,7 +42,7 @@
             <input
               v-model="filters.search"
               type="text"
-              placeholder="상품명 또는 SKU 검색"
+              placeholder="상품명·SKU·카테고리 검색"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               @input="debouncedSearch"
             />
