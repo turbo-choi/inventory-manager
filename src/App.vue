@@ -1,6 +1,10 @@
 <template>
-  <div>
-    <router-view />
+  <div class="min-h-screen bg-gray-50 text-gray-900 transition-colors duration-200 dark:bg-gray-950 dark:text-gray-100">
+    <router-view v-slot="{ Component }">
+      <transition name="route-fade" mode="out-in" appear>
+        <component :is="Component" />
+      </transition>
+    </router-view>
 
     <!-- 전역 테마 토글 버튼 (모든 페이지에서 노출) -->
     <button
@@ -75,4 +79,11 @@ html.dark ::-webkit-scrollbar { width: 10px; height: 10px; }
 html.dark ::-webkit-scrollbar-track { background: #0b0f19; }
 html.dark ::-webkit-scrollbar-thumb { background: #374151; border-radius: 8px; }
 html.dark ::-webkit-scrollbar-thumb:hover { background: #4B5563; }
+
+/* 라우트 전환: 배경 깜빡임 방지를 위한 opacity 기반 페이드 */
+.route-fade-enter-active, .route-fade-leave-active { transition: opacity 150ms ease; }
+.route-fade-enter-from, .route-fade-leave-to { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .route-fade-enter-active, .route-fade-leave-active { transition: none; }
+}
 </style>
