@@ -31,7 +31,7 @@ router.get('/', authenticateToken, requireActiveUser, (req, res) => {
     let filteredTransactions = allTransactions.filter(transaction => {
       const t: any = transaction as any;
       const itemId = t.item_id ?? t.inventory_id;
-      const userId = t.user_id ?? t.created_by;
+      const _userId = t.user_id ?? t.created_by;
       if (type && transaction.type !== type) return false;
       if (inventoryId && itemId !== parseInt(inventoryId)) return false;
 

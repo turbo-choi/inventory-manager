@@ -49,7 +49,7 @@ router.get('/', authenticateToken, requireAdmin, async (req: Request, res: Respo
     const search = req.query.search as string || '';
     const role = req.query.role as UserRole;
     // 기존 쿼리 파라미터 유지(미사용)
-    const isActive = req.query.is_active;
+    const _isActive = req.query.is_active;
     // 프론트에서 사용하는 status(active|inactive) 필터 지원
     const statusFilter = req.query.status as string | undefined;
 

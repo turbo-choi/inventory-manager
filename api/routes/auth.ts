@@ -45,7 +45,8 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const { password_hash, ...userWithoutPassword } = user as any;
+    // 사용하지 않는 비밀번호 필드를 제거하려던 이전 코드 삭제
+    // const { password_hash, ...userWithoutPassword } = user as any;
 
     const token = generateToken({ id: user.id, username: user.username, role: user.role });
 
