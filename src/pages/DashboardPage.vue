@@ -178,15 +178,15 @@
             <div
               v-for="item in lowStockItems.slice(0, 5)"
               :key="item.id"
-              class="flex items-center justify-between p-3 bg-red-50 rounded-lg"
+              class="flex items-center justify-between p-3 bg-red-600 rounded-lg"
             >
               <div>
-                <p class="text-sm font-medium text-gray-900">{{ item.name }}</p>
-                <p class="text-xs text-gray-500">SKU: {{ item.sku }}</p>
+                <p class="text-sm font-medium text-white">{{ item.name }}</p>
+                <p class="text-xs text-red-100">SKU: {{ item.sku }}</p>
               </div>
               <div class="text-right">
-                <p class="text-sm font-medium text-red-600">{{ (item.current_stock ?? 0).toLocaleString() }}</p>
-                <p class="text-xs text-gray-500">최소: {{ (item.min_stock_level ?? 0).toLocaleString() }}</p>
+                <p class="text-sm font-medium text-white">{{ (item.current_stock ?? 0).toLocaleString() }}</p>
+                <p class="text-xs text-red-100">최소: {{ (item.min_stock_level ?? 0).toLocaleString() }}</p>
               </div>
             </div>
             <router-link
