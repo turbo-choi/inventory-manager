@@ -1,12 +1,13 @@
 import express from 'express';
 import type { Request, Response } from 'express';
+import type { Router as ExpressRouter } from 'express';
 const { Router } = express;
 import bcrypt from 'bcryptjs';
 import dbManager from '../database/database';
 import { generateToken, authenticateToken } from '../middleware/auth';
 import type { LoginRequest, LoginResponse, User, ApiResponse } from '../../shared/types.js';
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 /**
  * 로그인 API
