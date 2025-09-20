@@ -5,11 +5,11 @@
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
         <!-- 브랜드 + 내비게이션 -->
         <div class="flex items-center gap-3">
-          <router-link :to="{ name: 'dashboard' }" class="inline-flex items-center gap-2 px-2 py-1 text-sm font-semibold tracking-tight text-gray-900 dark:text-gray-100 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
-             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <router-link :to="{ name: 'dashboard' }" aria-label="재고 관리 시스템" class="inline-flex items-center gap-2 px-2 py-1 text-sm font-semibold tracking-tight text-gray-900 dark:text-gray-100 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 whitespace-nowrap shrink-0">
+             <svg class="h-5 w-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
              </svg>
-             재고 관리 시스템
+             <span class="hidden sm:inline">재고 관리 시스템</span>
            </router-link>
           <nav class="flex items-center gap-1">
             <router-link
