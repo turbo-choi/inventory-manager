@@ -10,16 +10,11 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
             </div>
-            <h1 class="text-xl font-semibold text-gray-900">재고 관리 시스템</h1>
+            <h1 class="text-xl font-semibold text-gray-900">대시보드</h1>
           </div>
           
-          <div class="flex items-center space-x-4">
-            <span class="text-sm text-gray-600">{{ user?.name }}님 환영합니다</span>
-            <button
-              @click="handleLogout"
-              class="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-            >로그아웃</button>
-          </div>
+          <!-- 중복된 우측 컨트롤(인사/로그아웃) 제거 -->
+          
         </div>
       </div>
     </header>
@@ -28,8 +23,6 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- 페이지 제목 -->
       <div class="mb-8">
-        <h2 class="text-2xl font-bold text-gray-900">대시보드</h2>
-        <p class="mt-1 text-sm text-gray-600">재고 현황을 한눈에 확인하세요</p>
       </div>
 
       <!-- 통계 카드 -->
@@ -153,7 +146,7 @@
             >
               <div class="p-2 bg-gray-100 rounded-lg mr-3">
                 <svg class="h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31 2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
@@ -178,15 +171,15 @@
             <div
               v-for="item in lowStockItems.slice(0, 5)"
               :key="item.id"
-              class="flex items-center justify-between p-3 bg-red-50 rounded-lg"
+              class="flex items-center justify-between p-3 bg-red-600 rounded-lg"
             >
               <div>
-                <p class="text-sm font-medium text-gray-900">{{ item.name }}</p>
-                <p class="text-xs text-gray-500">SKU: {{ item.sku }}</p>
+                <p class="text-sm font-medium text-white">{{ item.name }}</p>
+                <p class="text-xs text-red-100">SKU: {{ item.sku }}</p>
               </div>
               <div class="text-right">
-                <p class="text-sm font-medium text-red-600">{{ (item.current_stock ?? 0).toLocaleString() }}</p>
-                <p class="text-xs text-gray-500">최소: {{ (item.min_stock_level ?? 0).toLocaleString() }}</p>
+                <p class="text-sm font-medium text-white">{{ (item.current_stock ?? 0).toLocaleString() }}</p>
+                <p class="text-xs text-red-100">최소: {{ (item.min_stock_level ?? 0).toLocaleString() }}</p>
               </div>
             </div>
             <router-link
@@ -279,13 +272,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue';
+// import { useRouter } from 'vue-router'; // 미사용 제거
 import { useAuth } from '../composables/useAuth';
 import type { Inventory, Transaction } from '../../shared/types';
 
-const router = useRouter();
-const { user, isAdmin, logout, authenticatedFetch } = useAuth();
+// const router = useRouter(); // 미사용 제거
+const { user: _user, isAdmin, authenticatedFetch } = useAuth();
 
 // 상태
 const stats = ref({
@@ -300,12 +293,12 @@ const recentTransactions = ref<Transaction[]>([]);
 const isLoading = ref(true);
 
 /**
- * 로그아웃 처리
+ * 로그아웃 처리 - 중복 UI 제거에 따라 함수도 정리
  */
-const handleLogout = async () => {
-  await logout();
-  router.push('/login');
-};
+// const handleLogout = async () => {
+//   await logout();
+//   router.push('/login');
+// };
 
 /**
  * 날짜 포맷팅

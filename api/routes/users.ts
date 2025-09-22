@@ -1,12 +1,13 @@
 import express from 'express';
 import type { Request, Response } from 'express';
+import type { Router as ExpressRouter } from 'express';
 const { Router } = express;
 import bcrypt from 'bcryptjs';
 import dbManager from '../database/database';
 import { authenticateToken, requireAdmin } from '../middleware/auth';
 import type { User, UserRole, UserStatus, ApiResponse, PaginatedResponse, CreateUserRequest, UpdateUserRequest } from '../../shared/types.js';
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 /**
  * 사용자 통계 조회 API (관리자만 접근 가능)
@@ -49,7 +50,7 @@ router.get('/', authenticateToken, requireAdmin, async (req: Request, res: Respo
     const search = req.query.search as string || '';
     const role = req.query.role as UserRole;
     // 기존 쿼리 파라미터 유지(미사용)
-    const isActive = req.query.is_active;
+    const _isActive = req.query.is_active;
     // 프론트에서 사용하는 status(active|inactive) 필터 지원
     const statusFilter = req.query.status as string | undefined;
 

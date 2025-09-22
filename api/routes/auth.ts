@@ -1,12 +1,13 @@
 import express from 'express';
 import type { Request, Response } from 'express';
+import type { Router as ExpressRouter } from 'express';
 const { Router } = express;
 import bcrypt from 'bcryptjs';
 import dbManager from '../database/database';
 import { generateToken, authenticateToken } from '../middleware/auth';
 import type { LoginRequest, LoginResponse, User, ApiResponse } from '../../shared/types.js';
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 /**
  * 로그인 API
@@ -45,7 +46,8 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const { password_hash, ...userWithoutPassword } = user as any;
+    // 사용하지 않는 비밀번호 필드를 제거하려던 이전 코드 삭제
+    // const { password_hash, ...userWithoutPassword } = user as any;
 
     const token = generateToken({ id: user.id, username: user.username, role: user.role });
 

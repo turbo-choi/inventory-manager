@@ -1,11 +1,12 @@
 import express from 'express';
 import type { Request, Response } from 'express';
+import type { Router as ExpressRouter } from 'express';
 const { Router } = express;
 import dbManager from '../database/database';
 import { authenticateToken, requireAdmin } from '../middleware/auth';
 import type { Inventory, Category, ApiResponse, PaginatedResponse, CreateInventoryRequest, UpdateInventoryRequest } from '../../shared/types.js';
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 /**
  * 재고 목록 조회 API

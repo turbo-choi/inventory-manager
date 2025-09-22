@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:bg-gradient-to-br dark:from-gray-950 dark:to-gray-900 flex items-center justify-center p-4">
     <div class="max-w-md w-full space-y-8">
       <!-- 로고 및 제목 -->
       <div class="text-center">
@@ -8,8 +8,8 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
           </svg>
         </div>
-        <h2 class="text-3xl font-bold text-gray-900">재고 관리 시스템</h2>
-        <p class="mt-2 text-sm text-gray-600">계정에 로그인하세요</p>
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100">재고 관리 시스템</h2>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">계정에 로그인하세요</p>
       </div>
 
       <!-- 로그인 폼 -->

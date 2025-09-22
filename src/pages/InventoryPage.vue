@@ -20,12 +20,7 @@
             >
               새 재고 추가
             </button>
-            <button
-              @click="handleLogout"
-              class="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-            >
-              로그아웃
-            </button>
+            <!-- 헤더 로그아웃 버튼 제거됨 -->
           </div>
         </div>
       </div>
@@ -433,14 +428,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { ref, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { useAuth } from '../composables/useAuth';
 import type { Inventory, Category, TransactionType } from '../../shared/types';
 
-const router = useRouter();
 const route = useRoute();
-const { logout, authenticatedFetch } = useAuth();
+const { authenticatedFetch } = useAuth();
 
 // 상태
 const inventory = ref<Inventory[]>([]);
@@ -503,10 +497,11 @@ const debouncedSearch = () => {
 /**
  * 로그아웃 처리
  */
-const handleLogout = async () => {
-  await logout();
-  router.push('/login');
-};
+// 제거됨: 헤더 로그아웃 버튼 삭제에 따라 불필요해진 핸들러
+// const handleLogout = async () => {
+//   await logout();
+//   router.push('/login');
+// };
 
 /**
  * 재고 상태 클래스 반환
@@ -806,6 +801,31 @@ const closeTransactionModal = () => {
   };
 };
 
+// 라우트 쿼리 감시: 검색 및 필터 변경 시 목록 갱신
+watch(
+  () => route.query.search,
+  (q) => {
+    const searchVal = typeof q === 'string' ? q : '';
+    if (filters.value.search !== searchVal) {
+      filters.value.search = searchVal;
+      pagination.value.page = 1;
+      loadInventory();
+    }
+  }
+);
+
+watch(
+  () => route.query.filter,
+  (val) => {
+    const status = val === 'low-stock' ? 'low-stock' : '';
+    if (filters.value.stockStatus !== status) {
+      filters.value.stockStatus = status;
+      pagination.value.page = 1;
+      loadInventory();
+    }
+  }
+);
+
 /**
  * 컴포넌트 마운트 시 데이터 로드
  */
@@ -813,6 +833,11 @@ onMounted(async () => {
   // URL 쿼리 파라미터에서 필터 설정
   if (route.query.filter === 'low-stock') {
     filters.value.stockStatus = 'low-stock';
+  }
+  // 신규: 검색 쿼리 동기화
+  if (typeof route.query.search === 'string') {
+    filters.value.search = route.query.search;
+    pagination.value.page = 1;
   }
   
   await loadCategories();

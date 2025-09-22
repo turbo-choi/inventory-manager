@@ -1,10 +1,11 @@
 import express from 'express';
+import type { Router } from 'express';
 // 기존 DatabaseManager 클래스 사용을 제거하고 단일 인스턴스 import 방식으로 통일
 import dbManager from '../database/database';
 import { authenticateToken, requireActiveUser } from '../middleware/auth';
 import type { Transaction, TransactionType, ApiResponse, PaginatedResponse } from '../../shared/types.js';
 
-const router = express.Router();
+const router: Router = express.Router();
 
 /**
  * 입출고 거래 목록 조회 (페이지네이션 지원)
@@ -31,7 +32,7 @@ router.get('/', authenticateToken, requireActiveUser, (req, res) => {
     let filteredTransactions = allTransactions.filter(transaction => {
       const t: any = transaction as any;
       const itemId = t.item_id ?? t.inventory_id;
-      const userId = t.user_id ?? t.created_by;
+      const _userId = t.user_id ?? t.created_by;
       if (type && transaction.type !== type) return false;
       if (inventoryId && itemId !== parseInt(inventoryId)) return false;
 

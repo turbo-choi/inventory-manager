@@ -1,6 +1,6 @@
-import express from 'express';
-import type { Request, Response, NextFunction } from 'express';
+// ... existing code ...
 import jwt, { type SignOptions, type JwtPayload } from 'jsonwebtoken';
+import type { Request, Response, NextFunction } from 'express';
 import type { UserRole } from '../../shared/types.js';
 
 const JWT_SECRET: string = process.env.JWT_SECRET || 'inventory-management-secret-key';
@@ -46,7 +46,7 @@ export const generateToken = (user: AuthUser): string => {
 export const verifyToken = (token: string): any => {
   try {
     return jwt.verify(token, JWT_SECRET);
-  } catch (error) {
+  } catch (_error) {
     throw new Error('Invalid token');
   }
 };
@@ -78,7 +78,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     };
 
     next();
-  } catch (error) {
+  } catch (_error) {
     res.status(403).json({
       success: false,
       message: '유효하지 않은 토큰입니다'
@@ -127,13 +127,13 @@ export const requireActiveUser = async (req: Request, res: Response, next: NextF
     // 실제 구현에서는 데이터베이스에서 사용자 상태를 확인해야 함
     // 여기서는 토큰에 포함된 정보만 사용
     next();
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: '사용자 상태 확인 중 오류가 발생했습니다'
-    });
-  }
-};
+  } catch (_error) {
+     res.status(500).json({
+       success: false,
+       message: '사용자 상태 확인 중 오류가 발생했습니다'
+     });
+   }
+ };
 
 /**
  * 선택적 인증 미들웨어
@@ -154,10 +154,10 @@ export const optionalAuth = (req: Request, res: Response, next: NextFunction): v
     }
 
     next();
-  } catch (error) {
-    // 토큰이 유효하지 않아도 계속 진행
-    next();
-  }
-};
+  } catch (_error) {
+     // 토큰이 유효하지 않아도 계속 진행
+     next();
+   }
+ };
 
 export { JWT_SECRET, JWT_EXPIRES_IN };

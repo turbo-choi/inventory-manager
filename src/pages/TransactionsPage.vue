@@ -14,12 +14,7 @@
           </div>
           
           <div class="flex items-center space-x-4">
-            <button
-              @click="handleLogout"
-              class="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-            >
-              로그아웃
-            </button>
+            <!-- 로그아웃 버튼 제거됨 -->
           </div>
         </div>
       </div>
@@ -380,12 +375,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+// import { useRouter } from 'vue-router'; // 제거
 import { useAuth } from '../composables/useAuth';
 import type { Transaction, TransactionType } from '../../shared/types';
 
-const router = useRouter();
-const { logout, authenticatedFetch, user } = useAuth();
+// const router = useRouter(); // 제거
+const { authenticatedFetch, user } = useAuth();
 
 // 상태
 const transactions = ref<Transaction[]>([]);
@@ -430,10 +425,11 @@ const debouncedSearch = () => {
 /**
  * 로그아웃 처리
  */
-const handleLogout = async () => {
-  await logout();
-  router.push('/login');
-};
+// 제거됨: 헤더 로그아웃 버튼 삭제에 따라 불필요해진 핸들러
+// const handleLogout = async () => {
+//   await logout();
+//   router.push('/login');
+// };
 
 /**
  * 거래 유형 클래스 반환
