@@ -1,26 +1,26 @@
-﻿# Repository Guidelines
+# Repository Guidelines
 
 ## Project Structure & Module Organization
-The Vue 3 client resides in `src/`: `components/` for shared UI, `pages/` for route views, `composables/` for reuse, and `lib/` for helpers. Alias `@` points to `src`. The Express API lives in `api/` with entry `server.ts`, routes grouped under `api/routes/`, middleware in `api/middleware/`, and SQLite access in `api/database/`. Domain contracts stay in `shared/types.ts`; always evolve client and server together. Local seed data sits in `data/inventory.json` alongside the SQL bootstrap in `api/database/init.sql`. Use `public/` for static assets and treat `dist/` as build output only.
+The Vue 3 client lives in `src/` with `components/` for shared UI, `pages/` for route views, `composables/` for reusable state, and `lib/` for helpers. The alias `@` targets `src/`. The Express API resides in `api/`; `server.ts` boots routes in `api/routes/`, middleware in `api/middleware/`, and SQLite helpers in `api/database/`. Domain contracts belong in `shared/types.ts` so client and server stay aligned. Local fixtures live in `data/inventory.json`, and the schema bootstrap sits in `api/database/init.sql`. Keep static assets in `public/`; treat `dist/` as build output only.
 
 ## Build, Test, and Development Commands
-- `pnpm install`: install workspace dependencies.
-- `pnpm run dev`: start Vite and the nodemon API concurrently.
-- `pnpm run client:dev`: run only the client while mocking the backend.
-- `pnpm run server:dev`: run only the API; loads `.env` and reloads on change.
-- `pnpm run build`: type-check with `vue-tsc` then emit production bundles.
-- `pnpm run preview`: serve the built client.
-- `pnpm run check`: project-wide TypeScript validation.
-- `pnpm run lint` / `pnpm run lint:fix`: ESLint for `.ts`/`.vue` files.
+- `pnpm install` – install all workspace dependencies.
+- `pnpm run dev` – launch Vite and nodemon together.
+- `pnpm run client:dev` – run the client with mocked backend endpoints.
+- `pnpm run server:dev` – start the API with hot reload and `.env` support.
+- `pnpm run build` – type-check with `vue-tsc` then emit production bundles.
+- `pnpm run check` – run project-wide TypeScript validation.
+- `pnpm run lint` / `pnpm run lint:fix` – enforce and auto-fix ESLint rules.
+- `pnpm run preview` – serve the built client for smoke testing.
 
 ## Coding Style & Naming Conventions
-Stick to TypeScript, reuse `shared/types.ts`, and keep composables named `useX`. Vue SFCs follow PascalCase filenames, routes and stores use camelCase, and Express files stay kebab-case. Preserve two-space indentation, single quotes in TS, and trailing commas on multi-line literals. Let ESLint and Vite handle formatting; never touch `dist/` manually.
+Write all logic in TypeScript. Use two-space indentation, single quotes, and trailing commas on multi-line literals. Name Vue components in PascalCase, composables as `useX`, route files in camelCase, and Express modules in kebab-case. Defer formatting to ESLint, Vite, and configured tooling; never modify `dist/` output manually.
 
 ## Testing Guidelines
-Automated tests are still being introduced. Add Vitest plus Vue Test Utils specs under `src/__tests__/` and supertest-based API checks alongside the relevant route. Target 80% coverage for new logic, capture manual QA steps in the PR, and include sample requests or UI screenshots when they clarify behaviour.
+Add Vitest and Vue Test Utils specs under `src/__tests__/` and supertest-based API checks alongside each route. Target 80% coverage for new logic, and document manual QA steps in pull requests. Name test files after the unit under test, e.g., `inventoryService.spec.ts`.
 
 ## Commit & Pull Request Guidelines
-Write imperative subject lines such as `fix: handle expired tokens`, with optional short bodies for context. Squash WIP commits before review. Each PR should explain the change, list commands run, link issues, and attach UI evidence for visible updates. Call out modifications to SQL, `shared/types.ts`, or `data/inventory.json` so reviewers can refresh their setup.
+Use imperative commit subjects such as `feat: add inventory filters`, squash WIP commits, and reference issues when relevant. Pull requests should describe the change, list commands executed, link issues, and include UI evidence or sample API requests when behavior changes. Highlight updates to SQL, `shared/types.ts`, or `data/inventory.json` so reviewers can refresh local state.
 
-## Environment & Security Notes
-Create a `.env` at the repo root for local runs; define `PORT`, `JWT_SECRET`, `JWT_EXPIRES_IN`, and any external API keys you introduce. Do not commit secrets or production datasets. When touching authentication or authorization, include a risk summary and regression focus areas for reviewers.
+## Security & Configuration Notes
+Create `.env` in the repository root with `PORT`, `JWT_SECRET`, `JWT_EXPIRES_IN`, and any external keys. Do not commit secrets or production datasets. When adjusting authentication or authorization, call out risk areas and regression checks in the PR.
